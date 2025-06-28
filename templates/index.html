@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wrist Abnormality Detection System</title>
+  <link rel="stylesheet" href="static/css/style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous" />
+  <script src="https://kit.fontawesome.com/8a3d976fe3.js" crossorigin="anonymous"></script>
+  <script src="{{ url_for('static', filename='js/index.js') }}"></script>
+</head>
+<body>
+
+<!-- Navbar Section -->
+<nav id="navbar">
+  <span id="logo">
+    <img src="static/images/logo.svg" alt="Project Logo" />
+  </span>
+  <ul>
+    <li class="item"><a href="#home">HOME <i class="fa fa-home"></i></a></li>
+    <li class="item"><a href="#upload">UPLOAD X-RAY <i class="fa fa-upload"></i></a></li>
+    <li class="item"><a href="#features">FEATURES <i class="fa fa-bolt"></i></a></li>
+    <li class="item"><a href="#technology-stack">TECH STACK <i class="fa fa-cogs"></i></a></li>
+    <li class="item"><a href="#team">TEAM <i class="fa fa-users"></i></a></li>
+    <li class="item"><a href="#about-us">ABOUT US <i class="fa fa-info-circle"></i></a></li>
+    <li class="item"><a href="#contact-us">CONTACT US <i class="fa fa-phone"></i></a></li>
+    <li class="item"><a href="{{ url_for('logout') }}" class="logout-button">LOG OUT <i class="fa fa-sign-out-alt"></i></a></li>
+  </ul>
+</nav>
+
+<!-- Home Section -->
+<section id="home">
+  <h1 class="h-primary">Wrist Abnormality Detection System</h1>
+  <p>Detect fractures and generate comprehensive reports using advanced AI technology.</p>
+</section>
+
+
+<section id="upload" class="container">
+  <h1 class="h-primary center">Upload Your Wrist X-ray</h1>
+  <form action="/index" method="post" enctype="multipart/form-data" id="uploadForm">
+    <div class="form-row">
+      <!-- Name -->
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" placeholder="Enter your name" required>
+      </div>
+
+      <!-- Age -->
+      <div class="form-group">
+        <label for="age">Age:</label>
+        <input type="number" id="age" name="age" placeholder="Enter your age" required min="1">
+      </div>
+
+      <!-- Gender -->
+      <div class="form-group">
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+          <option value="">Select your gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Radio Buttons for Wrist Side -->
+    <div class="form-row">
+      <div class="radio-group">
+        <label>
+          <input type="radio" id="leftWrist" name="wrist" value="left" required> Left Wrist
+        </label>
+        <label>
+          <input type="radio" id="rightWrist" name="wrist" value="right"> Right Wrist
+        </label>
+      </div>
+    </div>
+
+    <!-- File Upload -->
+    <div class="form-group">
+      <label for="file">Upload X-ray Image:</label>
+      <input type="file" id="file" accept="image/png" name="file" required class="form-control-file">
+    </div>
+
+    <!-- Buttons -->
+    <div class="button-group">
+      <button type="submit" class="btn btn-action">Analyze X-ray</button>
+      <a href="{{ url_for('results') }}" class="btn btn-action" 
+         {% if not session.get('image_generated') %} style="pointer-events: none; opacity: 0.5;" {% endif %}>
+         Results
+      </a>
+    </div>
+  </form>
+
+  <!-- Loader -->
+<div id="loader" class="hidden">
+  <p id="loader-message">Analyzing the X-Ray...</p> <!-- Message Above Spinner -->
+  <div class="spinner"></div> <!-- Spinner Below the Message -->
+</div>
+
+  <script>
+    // Wait for the DOM to load
+    document.addEventListener('DOMContentLoaded', function () {
+      // Ensure the loader is hidden by default
+      document.getElementById('loader').classList.add('hidden');
+
+      // Show loader only when form is submitted and validation passes
+      document.getElementById('uploadForm').addEventListener('submit', function (e) {
+        // Get all form fields
+        const name = document.getElementById('name').value.trim();
+        const age = document.getElementById('age').value.trim();
+        const gender = document.getElementById('gender').value;
+        const wrist = document.querySelector('input[name="wrist"]:checked');
+        const file = document.getElementById('file').files[0];
+
+        // Validate if all fields are filled
+        if (!name || !age || !gender || !wrist || !file) {
+          e.preventDefault(); // Stop form submission
+          alert('Please fill in all required fields and upload an X-ray image.');
+          return;
+        }
+
+        // Show loader only if validation passes
+        document.getElementById('loader').classList.remove('hidden');
+      });
+    });
+  </script>
+
+</section>
+
+
+
+<!-- Popup Modal for image upload reminder -->
+<div class="modal" tabindex="-1" id="uploadModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Please Upload an Image</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>You need to upload an X-ray image first before analyzing or viewing results.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Features Section -->
+<section id="features" class="container">
+  <h2>Key Features & Benefits</h2>
+  <p>Explore the capabilities that make our project impactful and user-friendly.</p>
+  <div class="features-grid">
+    <div class="feature-item">
+      <img src="static/images/feature1-icon.jpg" alt="Real-time Detection Icon">
+      <h3>Real-time Fracture Detection</h3>
+      <p>Analyze static/images instantly to detect fractures with high accuracy.</p>
+    </div>
+    <div class="feature-item">
+      <img src="static/images/feature2-icon.png" alt="AI-powered Report Icon">
+      <h3>AI-Powered Report Generation</h3>
+      <p>Automatically generate detailed reports using advanced AI models.</p>
+    </div>
+    <div class="feature-item">
+      <img src="static/images/feature3-icon.png" alt="User-friendly Icon">
+      <h3>User-friendly Interface</h3>
+      <p>An intuitive interface designed for ease of use and accessibility.</p>
+    </div>
+    <!-- Add more feature items as needed -->
+  </div>
+</section>
+
+<!-- Technology Stack Section -->
+<section id="technology-stack" class="container">
+  <h2>Technology Stack</h2>
+  <p>Our project utilizes a range of powerful technologies to deliver accurate and efficient results.</p>
+  <div class="tech-grid">
+    <div class="tech-item">
+      <img src="static/images/python-icon.jpeg" alt="Python Icon">
+      <h3>Python</h3>
+    </div>
+    <div class="tech-item">
+      <img src="static/images/flask-icon.png" alt="Flask Icon">
+      <h3>Flask</h3>
+    </div>
+    <div class="tech-item">
+      <img src="static/images/yolov9-icon.png" alt="YOLOv9 Icon">
+      <h3>YOLOv9</h3>
+    </div>
+    <div class="tech-item">
+      <img src="static/images/tensorflow-icon.png" alt="TensorFlow Icon">
+      <h3>TensorFlow</h3>
+    </div>
+    <div class="tech-item">
+      <img src="static/images/html-icon.jpeg" alt="HTML Icon">
+      <h3>HTML</h3>
+    </div>
+    <div class="tech-item">
+      <img src="static/images/css-icon.png" alt="CSS Icon">
+      <h3>CSS</h3>
+    </div>
+    <div class="tech-item">
+      <img src="static/images/javascript-icon.png" alt="JavaScript Icon">
+      <h3>JavaScript</h3>
+    </div>
+    <div class="tech-item">
+      <img src="static/images/opencv-icon.png" alt="OpenCV Icon">
+      <h3>OpenCV</h3>
+    </div>
+    <div class="tech-item">
+      <img src="static/images/icon-llm.jpg" alt="OpenCV Icon">
+      <h3>LLM</h3>
+    </div>
+    <!-- Add more tech items as needed -->
+  </div>
+</section>
+
+   <!-- Team -->
+<section id="team" class="container">
+  <h1 class="h-primary center">Meet the Team</h1>
+  <div class="row text-center mt-4">
+    <div class="col-md-4">
+      <div class="team-member">
+        <img src="static/images/jazib.jpg" alt="Jazib Sarwar" class="team-photo">
+        <h3>Jazib Sarwar</h3>
+        <p>Backend and Deep Learning Engineer</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="team-member">
+        <img src="static/images/aqsa.jpg" alt="Aqsa Hafeez" class="team-photo">
+        <h3>Aqsa Hafeez</h3>
+        <p>Full Stack Developer and Gen AI </p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="team-member">
+        <img src="static/images/islam.jpg" alt="Islam Nabi" class="team-photo">
+        <h3>Islam Nabi</h3>
+        <p>Machine Learning Engineer and Backend Developer </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- About Us Section -->
+<section id="about-us" class="container">
+  <h2>About Us</h2>
+  <p>We are committed to advancing healthcare through AI, enabling medical professionals to make timely, accurate diagnoses.</p>
+
+  <!-- Mission and Vision -->
+  <div class="about-details">
+    <div class="mission">
+      <h3>Our Mission</h3>
+      <p>To empower healthcare providers with AI tools for enhanced diagnostic accuracy and better patient outcomes.</p>
+    </div>
+    <div class="vision">
+      <h3>Our Vision</h3>
+      <p>To revolutionize healthcare diagnostics with intelligent solutions and set new standards in medical imaging.</p>
+    </div>
+  </div>
+
+  <!-- Core Values -->
+  <div class="core-values">
+    <h3>Core Values</h3>
+    <ul>
+      <li><strong>Innovation:</strong> Pushing boundaries to create effective AI solutions.</li>
+      <li><strong>Integrity:</strong> Upholding ethical standards in healthcare technology.</li>
+      <li><strong>Quality:</strong> Ensuring accuracy, reliability, and precision in every diagnosis.</li>
+      <li><strong>Collaboration:</strong> Partnering closely with healthcare providers to meet their needs.</li>
+    </ul>
+  </div>
+
+  <!-- Call to Action -->
+  <div class="cta">
+    <p>Interested in learning more or collaborating? <a href="#contact-us">Contact Us</a> to discover how our technology can help.</p>
+  </div>
+</section>
+
+<!-- Contact Us Section -->
+
+<section id="contact-us" class="container">
+  <h1 class="h-primary center">Contact Us</h1>
+  <div id="contact-box">
+      <form action="{{ url_for('submit_contact') }}" method="POST">
+          <div class="form-group">
+              <label for="name">Name:</label>
+              <input type="text" id="name" name="name" placeholder="Your Name" required>
+          </div>
+          <div class="form-group">
+              <label for="email">Email:</label>
+              <input type="email" id="email" name="email" placeholder="Your Email" required>
+          </div>
+          <div class="form-group">
+              <label for="message">Feedback:</label>
+              <textarea id="message" name="message" placeholder="Your Message" required></textarea>
+          </div>
+          <button type="submit" class="submit">Submit</button>
+      </form>
+  </div>
+</section>
+
+
+<!-- Footer Section -->
+<footer>
+  <div class="center footer">
+    &copy; 2024@ Wrist Abnormality Detection System. All rights reserved.
+  </div>
+</footer>
+
+<!-- Bootstrap Script -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf" crossorigin="anonymous"></script>
+  <script>
+    function startAnalysis() {
+  const fileInput = document.querySelector('input[name="file"]');
+  const form = document.getElementById("uploadForm");
+  const progressBar = document.getElementById("progressBar");
+  const progressText = document.getElementById("progressText");
+  const progressContainer = document.getElementById("progressContainer");
+  const loadingSpinner = document.getElementById("loadingSpinner");
+  
+  // Check if the file is uploaded
+  if (!fileInput.files.length) {
+    // If no file is selected, show the modal to inform the user
+    const uploadModal = new bootstrap.Modal(document.getElementById('uploadModal'));
+    uploadModal.show();
+    return;
+  }
+
+  // Show progress container and reset progress bar
+  progressContainer.style.display = "block";
+  progressBar.style.width = "0%";
+  progressText.textContent = "0%";
+  
+  // Create XMLHttpRequest for file upload
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "/index", true);
+  
+  // Display progress bar during file upload
+  xhr.upload.onprogress = function (event) {
+    if (event.lengthComputable) {
+      const percentComplete = Math.round((event.loaded / event.total) * 100);
+      progressBar.style.width = percentComplete + "%";
+      progressText.textContent = percentComplete + "%";
+    }
+  };
+  
+  // After upload completes, hide the progress bar and show loading spinner
+  xhr.onloadstart = function () {
+    xhr.upload.onload = function () {
+      progressContainer.style.display = "none";
+      loadingSpinner.style.display = "block";
+    };
+  };
+  
+  // When the model finishes processing, hide the spinner and redirect to results
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      loadingSpinner.style.display = "none";
+      window.location.href = "/results";
+    } else {
+      alert("Error during analysis. Please try again.");
+      progressContainer.style.display = "none";
+      loadingSpinner.style.display = "none";
+    }
+  };
+  
+  // Send the form data
+  const formData = new FormData(form);
+  xhr.send(formData);
+}
+// Function to handle the "Results" button click
+function handleResultsClick(event) {
+  const fileInput = document.querySelector('input[name="file"]');
+  const resultPageUrl = event.target.getAttribute('data-target-url'); // Assuming you have a URL stored
+
+  // Check if the file is uploaded
+
+  // Check if the result page exists
+  fetch(resultPageUrl, { method: 'HEAD' }) // Make a HEAD request to check if the page exists
+    .then((response) => {
+      if (!response.ok) {
+        event.preventDefault();
+        const notFoundModal = new bootstrap.Modal(document.getElementById('notFoundModal')); // Modal for non-existent page
+        notFoundModal.show();
+      }
+    })
+    .catch((error) => {
+      console.error('Error checking page existence:', error);
+      event.preventDefault();
+      const notFoundModal = new bootstrap.Modal(document.getElementById('notFoundModal'));
+      notFoundModal.show();
+    });
+}
+
+</script>  
+    
+</body>
+</html>
