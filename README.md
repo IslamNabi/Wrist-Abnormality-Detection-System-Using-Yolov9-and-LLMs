@@ -1,6 +1,9 @@
 # Final Year Project – YOLOv9 & LLM Integrated Diagnostic System
 
-This is my Final Year Project integrating the official [YOLOv9](https://github.com/WongKinYiu/yolov9) model into a complete application for X-ray image diagnosis.
+This is my Final Year Project that integrates the official YOLOv9 repository [YOLOv9](https://github.com/WongKinYiu/yolov9) with a custom-trained Fracture detection model for X-ray image diagnosis. The YOLOv9 model was trained from scratch on a medical imaging dataset [GRAZPEDWRI-DX] to accurately detect specific anomalies. The project also includes a Flask-based web interface for image uploads, real-time predictions, and diagnostic report generation using Large Language Model (LLM).
+
+
+
 
 ## 📁 Project Structure
 
