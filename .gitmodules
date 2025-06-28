@@ -1,0 +1,3 @@
+[submodule "models/yolov9"]
+	path = models/yolov9
+	url = https://github.com/WongKinYiu/yolov9.git
