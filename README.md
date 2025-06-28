@@ -1,4 +1,4 @@
-# Final Year Project – YOLOv9 Integrated System
+# Final Year Project – YOLOv9 & LLM Integrated Diagnostic System
 
 This is my Final Year Project integrating the official [YOLOv9](https://github.com/WongKinYiu/yolov9) model into a complete application for X-ray image diagnosis.
 
